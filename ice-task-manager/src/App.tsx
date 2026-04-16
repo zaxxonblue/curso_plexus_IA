@@ -1,21 +1,43 @@
-import './App.css'
+import { useState } from 'react';
+import './App.css';
+import { useTasks } from './hooks/useTasks';
 
-const taskOneChecklist = [
-  'Proyecto React con TypeScript inicializado',
-  'Estructura de carpetas preparada para dominio, UI y servicios',
-  'Contrato Task definido para el flujo del MVP',
-  'Utilidades puras de cálculo y ordenación listas',
-]
+const taskTwoChecklist = [
+  'Hook useTasks centraliza la lógica de estado',
+  'Gestión de tareas en memoria',
+  'Acciones para crear y actualizar tareas',
+  'API clara y reutilizable para componentes',
+];
 
 function App() {
+  const { tasks, selectedTaskId, createTask, updateIceValues, selectTask, getSelectedTask } = useTasks();
+  const [demoName, setDemoName] = useState('');
+  const [demoDescription, setDemoDescription] = useState('');
+
+  const handleCreateDemoTask = () => {
+    if (demoName.trim()) {
+      createTask(demoName, demoDescription);
+      setDemoName('');
+      setDemoDescription('');
+    }
+  };
+
+  const handleUpdateIce = (impact: number, confidence: number, ease: number) => {
+    if (selectedTaskId) {
+      updateIceValues(selectedTaskId, { impact, confidence, ease });
+    }
+  };
+
+  const selectedTask = getSelectedTask();
+
   return (
     <div className="app-shell">
       <header className="hero-section">
-        <span className="badge">MVP ICE · React</span>
+        <span className="badge">MVP ICE · Tarea 2</span>
         <h1>Gestor de tareas inteligente con ICE</h1>
         <p className="lead">
-          Base técnica del proyecto preparada para seguir con el formulario, la lista de tareas y
-          la integración con IA en las siguientes iteraciones.
+          Hook useTasks centraliza la lógica, preparando componentes UI para las próximas
+          iteraciones.
         </p>
       </header>
 
@@ -23,32 +45,93 @@ function App() {
         <section className="panel panel-accent">
           <h2>Estado actual</h2>
           <p>
-            Esta pantalla deja el esqueleto visual inicial del producto y confirma que la base
-            técnica ya está lista para crecer sin mezclar responsabilidades.
+            useTasks gestiona el estado de tareas, selección y modal. Los componentes UI
+            consumirán este hook sin mezclar responsabilidades.
           </p>
         </section>
 
         <section className="panel">
-          <h2>Alcance de la Tarea 1</h2>
+          <h2>Demo: Crear tarea</h2>
+          <input
+            type="text"
+            placeholder="Nombre de la tarea"
+            value={demoName}
+            onChange={(e) => setDemoName(e.target.value)}
+          />
+          <textarea
+            placeholder="Descripción"
+            value={demoDescription}
+            onChange={(e) => setDemoDescription(e.target.value)}
+          />
+          <button onClick={handleCreateDemoTask}>Crear tarea</button>
+        </section>
+
+        <section className="panel">
+          <h2>Tareas ({tasks.length})</h2>
+          {tasks.length === 0 ? (
+            <p>No hay tareas aún.</p>
+          ) : (
+            <ul>
+              {tasks.map((task) => (
+                <li key={task.id} onClick={() => selectTask(task.id)}>
+                  <strong>{task.name}</strong> - {task.description}
+                  {task.iceScore && <span> (ICE: {task.iceScore})</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {selectedTask && (
+          <section className="panel">
+            <h2>Editar ICE: {selectedTask.name}</h2>
+            <div>
+              <label>
+                Impact (1-10):
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  defaultValue={selectedTask.impact ?? 5}
+                  onChange={(e) => handleUpdateIce(parseInt(e.target.value), selectedTask.confidence ?? 5, selectedTask.ease ?? 5)}
+                />
+              </label>
+              <label>
+                Confidence (1-10):
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  defaultValue={selectedTask.confidence ?? 5}
+                  onChange={(e) => handleUpdateIce(selectedTask.impact ?? 5, parseInt(e.target.value), selectedTask.ease ?? 5)}
+                />
+              </label>
+              <label>
+                Ease (1-10):
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  defaultValue={selectedTask.ease ?? 5}
+                  onChange={(e) => handleUpdateIce(selectedTask.impact ?? 5, selectedTask.confidence ?? 5, parseInt(e.target.value))}
+                />
+              </label>
+            </div>
+            {selectedTask.iceScore && <p>ICE Score: {selectedTask.iceScore}</p>}
+          </section>
+        )}
+
+        <section className="panel">
+          <h2>Alcance de la Tarea 2</h2>
           <ul className="checklist">
-            {taskOneChecklist.map((item) => (
+            {taskTwoChecklist.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
         </section>
-
-        <section className="panel">
-          <h2>Siguientes bloques del MVP</h2>
-          <div className="next-steps">
-            <span>Formulario de alta</span>
-            <span>Lista de tareas</span>
-            <span>Cálculo ICE</span>
-            <span>Revisión con IA</span>
-          </div>
-        </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
